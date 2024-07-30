@@ -2,16 +2,20 @@ export class WelcomePage {
 
     async render() {
 
+        const welcomeViewElm = document.createElement('div');
+        welcomeViewElm.id = 'welcome-page-view';
+
         const welcomeText = document.createElement('div')
-        welcomeText.id = 'welcome'
+        welcomeText.id = 'welcomeText'
+        welcomeText.innerText = "Welcome to the App"
 
-        const startButton = document.createElement('div')
-        startButton.id = 'startBtn'
+        const startButtonArea = document.createElement('div')
+        startButtonArea.id = 'startBtnArea'
+        const loginButton = new ButtonHandler('startBtnArea')
 
-        document.addEventListener('DOMContentLoaded', () => {
-           new ButtonHandler('startBtn');
-        });
 
+        welcomeViewElm.appendChild(welcomeText);
+        return welcomeViewElm;
     }
 }
 
