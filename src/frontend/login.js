@@ -1,120 +1,107 @@
+import { App } from './App.js';
+import { MainPage } from './MainPage.js';
+
 export class WelcomePage {
+
+    #welcomeViewElm = null;
+    #startButtonView = null;
+    #server = null;
+
+    constructor(server) {
+        this.#server = server;
+    }
 
     async render() {
 
-        const welcomeViewElm = document.createElement('div');
-        welcomeViewElm.id = 'welcome-page-view';
+        this.#welcomeViewElm = document.createElement('div');
+        this.#welcomeViewElm.id = 'welcome-page-view';
 
         const welcomeText = document.createElement('div')
         welcomeText.id = 'welcomeText'
         welcomeText.innerText = "Welcome to the App"
 
-        const startButtonArea = document.createElement('div')
-        startButtonArea.id = 'startBtnArea'
-        const loginButton = new ButtonHandler('startBtnArea')
+
+        const startButton = new LoginButton(this.#server);
+        this.#startButtonView = await startButton.render()
 
 
-        welcomeViewElm.appendChild(welcomeText);
-        return welcomeViewElm;
+        this.#welcomeViewElm.appendChild(welcomeText);
+        this.#welcomeViewElm.appendChild(this.#startButtonView);
+
+        return this.#welcomeViewElm;
     }
 }
 
-export class ButtonHandler {
-    constructor(containerId) {
-        this.container = document.getElementById(containerId);
-        this.initialize();
+export class LoginButton {
+
+    #buttonView = null;
+    #server = null;
+
+    constructor(server) {
+        this.#server = server;
     }
 
-    async initialize() {
-        this.renderGetStartedButton();
+    async render() {
+        this.#buttonView = document.createElement('div');
+        this.#buttonView.id = 'loginButtonView'
+
+        const createAccountButton = document.createElement('button')
+        createAccountButton.id = 'createAccountButtonStyle'
+        createAccountButton.innerHTML = "Create Account"
+
+        const loginAccountButton = document.createElement('button')
+        loginAccountButton.id = 'loginAccountButtonStyle'
+        loginAccountButton.innerHTML = "Login"
+
+        this.#buttonView.appendChild(createAccountButton);
+        this.#buttonView.appendChild(loginAccountButton);
+
+        loginAccountButton.addEventListener('click', () => this.loginView())
+
+        createAccountButton.addEventListener('click', () => {
+
+            window.appInstance.navigateTo('accountSetup')
+        })
+
+
+
+        return this.#buttonView;
     }
 
-    async renderGetStartedButton() {
-        this.clearContainer();
-        const getStartedButton = document.createElement('button');
-        getStartedButton.textContent = 'Get Started';
-        getStartedButton.onclick = () => this.handleGetStartedClick();
-        this.container.appendChild(getStartedButton);
-    }
+    async loginView() {
 
-    async handleGetStartedClick() {
-        this.clearContainer();
-        const loginButton = document.createElement('button');
-        loginButton.textContent = 'Login';
-        loginButton.onclick = () => this.renderLogin(); 
+        this.#buttonView.innerHTML = '';
 
-        const createAccountButton = document.createElement('button');
-        createAccountButton.textContent = 'Create New Account';
-        createAccountButton.onclick = () => this.renderCreateAccount();
+        const usernameInputView = document.createElement('input')
+        usernameInputView.setAttribute('type', 'text')
+        usernameInputView.setAttribute('placeholder', 'Username')
 
-        this.container.appendChild(loginButton);
-        this.container.appendChild(createAccountButton);
-    }
+        const passwordInputView = document.createElement('input')
+        passwordInputView.setAttribute('type', 'text')
+        passwordInputView.setAttribute('placeholder', 'Password')
 
-    async renderLogin() {
-        this.clearContainer();
-        const usernameInput = document.createElement('input');
-        usernameInput.placeholder = 'Username';
+        const goButton = document.createElement('button')
+        goButton.innerHTML = "Go"
 
-        const passwordInput = document.createElement('input');
-        passwordInput.placeholder = 'Password';
-        passwordInput.type = 'password';
+        const formatWindow = document.createElement('div')
+        formatWindow.id = 'loginFormatWindow'
 
-        const submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit';
-        submitButton.onclick = () => this.handleLogin(usernameInput.value, passwordInput.value);
+        formatWindow.appendChild(usernameInputView)
+        formatWindow.appendChild(passwordInputView)
+        formatWindow.appendChild(goButton)
 
-        this.container.appendChild(usernameInput);
-        this.container.appendChild(passwordInput);
-        this.container.appendChild(submitButton);
-    }
-
-    async renderCreateAccount() {
-        this.clearContainer();
-        const usernameInput = document.createElement('input');
-        usernameInput.placeholder = 'Username';
-
-        const passwordInput = document.createElement('input');
-        passwordInput.placeholder = 'Password';
-        passwordInput.type = 'password';
-
-        const submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit';
-        submitButton.onclick = () => this.handleCreateAccount(usernameInput.value, passwordInput.value);
-
-        this.container.appendChild(usernameInput);
-        this.container.appendChild(passwordInput);
-        this.container.appendChild(submitButton);
-    }
-
-    async handleLogin(username, password) {
-        const storedPassword = localStorage.getItem(username);
-        if (storedPassword === password) {
-            alert('Login successful!');
-            this.clearContainer();
-        } else {
-            alert('Invalid username or password.');
-        }
-    }
-
-    async handleCreateAccount(username, password) {
-        if (localStorage.getItem(username)) {
-            alert('Username already exists.');
-        } else {
-            localStorage.setItem(username, password);
-            alert('Account created successfully!');
-            this.clearContainer();
-        }
-    }
-
-    clearContainer() {
-        while (this.container.firstChild) {
-            this.container.removeChild(this.container.firstChild);
-        }
+        this.#buttonView.appendChild(formatWindow)
+        
+        goButton.addEventListener('click', () => {
+            const username = usernameInputView.value;
+            const password = passwordInputView.value;
+            const account = this.#server.getAccountByUsername(username);
+            if (account && account.verifyPassword(password)) {
+                // alert('Login successful!');
+                window.appInstance.navigateTo('mainPage', account);
+            } // else {
+            //      alert('Invalid username or password.');
+            // }
+        })
     }
 }
-
-// Usage
-// document.addEventListener('DOMContentLoaded', () => {
-//     new ButtonHandler('button-container');
-// });

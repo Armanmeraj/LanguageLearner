@@ -7,3 +7,25 @@
 #welcomeText {
     color: brown;
 }
+
+#loginAccountButtonStyle {
+    
+}
+
+#createAccountButtonStyle {
+
+}
+
+.languageOption {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.languageOption:hover {
+    background-color: #f0f0f0;
+}
+
+.languageOption.selected {
+    background-color: #d0d0d0;
+    font-weight: bold;
+}
