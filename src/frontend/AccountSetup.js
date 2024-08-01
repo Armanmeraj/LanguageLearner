@@ -1,5 +1,6 @@
 import { Account } from './Account.js';
 import { Server } from './Server.js';
+import { NavBar } from './NavBar.js';
 
 export class AccountSetup {
 
@@ -11,7 +12,7 @@ export class AccountSetup {
         this.#server = server;
     }
 
-    async render() {
+    async render() { 
 
 
         this.#accountSetupViewElm = document.createElement('div');
@@ -20,18 +21,22 @@ export class AccountSetup {
         const firstNameInput = document.createElement('input')
         firstNameInput.setAttribute('type', 'text')
         firstNameInput.setAttribute('placeholder', 'First Name')
+        firstNameInput.className = "AccountInput"
 
         const lastNameInput = document.createElement('input')
         lastNameInput.setAttribute('type', 'text')
         lastNameInput.setAttribute('placeholder', 'Last Name')
+        lastNameInput.className = "AccountInput"
 
         const createUsernameInput = document.createElement('input')
         createUsernameInput.setAttribute('type', 'text')
         createUsernameInput.setAttribute('placeholder', 'Username')
+        createUsernameInput.className = "AccountInput"
 
         const createPasswordInput = document.createElement('input')
         createPasswordInput.setAttribute('type', 'text')
         createPasswordInput.setAttribute('placeholder', 'Password')
+        createPasswordInput.className = "AccountInput"
 
         const selectLanguageText = document.createElement('div')
         selectLanguageText.id = 'selectLanguageText'
@@ -49,9 +54,12 @@ export class AccountSetup {
                 this.#newAccount = new Account(firstNameInput.value, 
                     lastNameInput.value, createUsernameInput.value, 
                     createPasswordInput.value, languageSelector.language);
+
+                this.#server.saveAccount(this.#newAccount);
+                window.appInstance.navigateTo('mainPage', this.#newAccount);
+                window.navbarInstance.switch('post', this.#newAccount);
             }
-            this.#server.saveAccount(this.#newAccount);
-            window.appInstance.navigateTo('mainPage', this.#newAccount);
+            
         })
 
         this.#accountSetupViewElm.appendChild(firstNameInput);

@@ -1,5 +1,6 @@
 import { App } from './App.js';
 import { MainPage } from './MainPage.js';
+import { NavBar } from './NavBar.js';
 
 export class WelcomePage {
 
@@ -18,7 +19,7 @@ export class WelcomePage {
 
         const welcomeText = document.createElement('div')
         welcomeText.id = 'welcomeText'
-        welcomeText.innerText = "Welcome to the App"
+        welcomeText.innerText = "Welcome to Class"
 
 
         const startButton = new LoginButton(this.#server);
@@ -75,10 +76,13 @@ export class LoginButton {
         const usernameInputView = document.createElement('input')
         usernameInputView.setAttribute('type', 'text')
         usernameInputView.setAttribute('placeholder', 'Username')
+        usernameInputView.className = "loginInputs"
 
         const passwordInputView = document.createElement('input')
         passwordInputView.setAttribute('type', 'text')
         passwordInputView.setAttribute('placeholder', 'Password')
+        passwordInputView.className = "loginInputs"
+
 
         const goButton = document.createElement('button')
         goButton.innerHTML = "Go"
@@ -99,6 +103,7 @@ export class LoginButton {
             if (account && account.verifyPassword(password)) {
                 // alert('Login successful!');
                 window.appInstance.navigateTo('mainPage', account);
+                window.navbarInstance.switch('post', account);
             } // else {
             //      alert('Invalid username or password.');
             // }
