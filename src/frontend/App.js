@@ -6,6 +6,7 @@ import { AboutView } from './AboutView.js';
 import { TheScienceView } from './TheScienceView.js';
 import { NavBar } from './NavBar.js';
 
+
 export class App {
 
     #mainViewElm = null;
