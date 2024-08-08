@@ -6,6 +6,9 @@ import { AboutView } from './AboutView.js';
 import { TheScienceView } from './TheScienceView.js';
 import { NavBar } from './NavBar.js';
 
+const db = new PouchDB('account');
+const URL = 'http://127.0.0.1:3000';
+
 
 export class App {
 
