@@ -1,20 +1,12 @@
-import { WelcomePage } from './login.js';
-import { AccountSetup } from './AccountSetup.js'
+import { WelcomePage } from './Welcome.js';
 import { Server } from './Server.js';
-import { MainPage } from './MainPage.js';
-import { AboutView } from './AboutView.js';
-import { TheScienceView } from './TheScienceView.js';
-import { NavBar } from './NavBar.js';
-
-const db = new PouchDB('account');
-const URL = 'http://127.0.0.1:3000';
-
+import { Home } from './Home.js';
 
 export class App {
 
-    #mainViewElm = null;
-    #welcomeViewElm = null;
     #server = null;
+    #navBarElm = null;
+    #bodyElm = null;
 
     constructor(server) {
         this.#server = server;
@@ -22,54 +14,191 @@ export class App {
 
     async render(root) {
 
-
         const rootElm = document.getElementById(root);
         rootElm.innerHTML = '';
 
-        this.#mainViewElm = document.createElement('div');
-        this.#mainViewElm.id = 'main-view';
+        this.#navBarElm = document.createElement('div');
+        this.#navBarElm.id = 'navBarElm';
+        this.#bodyElm = document.createElement('div');
+        this.#bodyElm.id = 'bodyElm';
 
-        rootElm.appendChild(this.#mainViewElm);
+        rootElm.appendChild(this.#navBarElm);
+        rootElm.appendChild(this.#bodyElm);
 
-        const WelcomeView = new WelcomePage(this.#server);
-        this.#welcomeViewElm = await WelcomeView.render()
-        this.navigateTo('welcome')
+        let view = await this.#server.findView();
+        await this.navigateTo(view);
+
     }
 
-    navigateTo(view, account = null) {
-        this.#mainViewElm.innerHTML = '';
+    async navigateTo(view) {
+        this.#bodyElm.innerHTML = '';
+        this.#navBarElm.innerHTML = '';
+
         if (view === 'welcome') {
-          this.#mainViewElm.appendChild(this.#welcomeViewElm);
-          window.location.hash = view;
+            const welcomeView = new WelcomePage(this.#server, this);
+            this.#bodyElm.appendChild(await welcomeView.render());
+            window.location.hash = view;
+            await this.#server.updateView(view);
+            await this.adjustNavBar();
         } 
-        else if (view === 'accountSetup') {
-            const accountSetupView = new AccountSetup(this.#server);
-            accountSetupView.render().then(accountSetupElm => {
-                this.#mainViewElm.appendChild(accountSetupElm);
-                window.location.hash = view;
-            });
-        }
         else if (view === 'about') {
             const aboutView = new AboutView();
-            aboutView.render().then(aboutViewElm => {
-                this.#mainViewElm.appendChild(aboutViewElm);
-                window.location.hash = view;
-            });
+            this.#bodyElm.appendChild(await aboutView.render());
+            window.location.hash = view;
+            await this.#server.updateView(view);
+            await this.adjustNavBar();
         }
         else if (view === 'science') {
             const theScienceView = new TheScienceView();
-            theScienceView.render().then(theScienceViewElm => {
-                this.#mainViewElm.appendChild(theScienceViewElm);
-                window.location.hash = view;
-            });
+            this.#bodyElm.appendChild(await theScienceView.render());
+            window.location.hash = view;
+            await this.#server.updateView(view);
+            await this.adjustNavBar();
         }
-        else if (view === 'mainPage' && account) {
-            const mainPageView = new MainPage(this.#server, account);
-            mainPageView.render().then(mainPageElm => {
-                this.#mainViewElm.appendChild(mainPageElm);
-                window.location.hash = view;
-            });
+        else if (view === 'home') {
+            const homeView = new Home(this.#server);
+            this.#bodyElm.appendChild(await homeView.render());
+            window.location.hash = view;
+            await this.#server.updateView(view);
+            await this.adjustNavBar();
+        }
+    }
+    async renderPreLoginNavBar() { // Fix CSS
+
+        this.#navBarElm.innerHTML = '';
+
+        const preLoginStyle = document.createElement('div');
+        preLoginStyle.id = 'preLoginStyle'
+
+        const getStartedView = document.createElement('button');
+        getStartedView.innerHTML = "Get Started";
+        getStartedView.className = 'navbarButton';
+
+        const aboutView = document.createElement('button');
+        aboutView.innerHTML = "About";
+        aboutView.className = 'navbarButton';
+
+        const theScienceView = document.createElement('button');
+        theScienceView.innerHTML = "The Science";
+        theScienceView.className = 'navbarButton';
+
+        preLoginStyle.appendChild(getStartedView);
+        preLoginStyle.appendChild(aboutView);
+        preLoginStyle.appendChild(theScienceView);
+
+        getStartedView.addEventListener('click', () => {
+            this.navigateTo('welcome')
+        });
+        aboutView.addEventListener('click', () => {
+            this.navigateTo('about');
+        })
+        theScienceView.addEventListener('click', () => {
+            this.navigateTo('science');
+        })
+
+        this.#navBarElm.appendChild(preLoginStyle);
+    }
+    async renderPostLoginNavBar() {
+
+        this.#navBarElm.innerHTML = '';
+
+        const postLoginStyle = document.createElement('div');
+        postLoginStyle.id = 'postLoginStyle'
+
+        const leftPostLoginStyle = document.createElement('div');
+        leftPostLoginStyle.id = 'leftPostLoginStyle'
+
+        const rightPostLoginStyle = document.createElement('div');
+        rightPostLoginStyle.id = 'rightPostLoginStyle'
+
+        const converseView = document.createElement('button');
+        converseView.innerHTML = "Converse";
+        converseView.className = 'navbarButton2';
+
+        const reviseView = document.createElement('button');
+        reviseView.innerHTML = "Revise";
+        reviseView.className = 'navbarButton2';
+
+        const memorizeView = document.createElement('button');
+        memorizeView.innerHTML = "Memorize";
+        memorizeView.className = 'navbarButton2';
+
+        const line = document.createElement('div');
+        line.id = 'navbarLine';
+
+        const aboutView = document.createElement('button');
+        aboutView.innerHTML = "About";
+        aboutView.className = 'navbarButton2';
+
+        const theScienceView = document.createElement('button');
+        theScienceView.innerHTML = "The Science";
+        theScienceView.className = 'navbarButton2';
+
+        const account = await this.#server.findAccount();
+        const name = document.createElement('button');
+        name.innerHTML = `<p>${account.firstName} ${account.lastName}</p>`;
+        name.id = 'navbarName';
+
+        leftPostLoginStyle.appendChild(converseView);
+        leftPostLoginStyle.appendChild(reviseView);
+        leftPostLoginStyle.appendChild(memorizeView);
+
+        rightPostLoginStyle.appendChild(aboutView);
+        rightPostLoginStyle.appendChild(theScienceView);
+
+        postLoginStyle.appendChild(leftPostLoginStyle);
+        postLoginStyle.appendChild(line);
+        postLoginStyle.appendChild(rightPostLoginStyle);
+
+        postLoginStyle.appendChild(name);
+
+        aboutView.addEventListener('click', () => {
+            this.navigateTo('about');
+        })
+        theScienceView.addEventListener('click', () => {
+            this.navigateTo('science');
+        })
+
+        this.#navBarElm.appendChild(postLoginStyle);
+
+    }
+
+    async adjustNavBar() {
+
+        let loggedIn = await this.#server.findLoginStatus();
+        if (loggedIn == 'true') {
+            await this.renderPostLoginNavBar();
+        }
+        else if (loggedIn == 'false') {
+            await this.renderPreLoginNavBar();
+        }
+        else {
+            console.log('Error: Login status not found');
         }
     }
 
+}
+
+class TheScienceView {
+
+    #theScienceView = null;
+
+    async render() {
+        this.#theScienceView = document.createElement('div');
+        this.#theScienceView.innerHTML = `<h1 style="color:black;>Later, an essay about what the science is behind the app will go here</h1>`;
+
+        return this.#theScienceView;
+    }
+}
+
+class AboutView {
+
+    #aboutView = null;
+
+    async render() {
+        this.#aboutView = document.createElement('div');
+        this.#aboutView.innerHTML = `<h1>Later, an essay about what the website is about and features will go here</h1>`;
+
+        return this.#aboutView;
+    }
 }

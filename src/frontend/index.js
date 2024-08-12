@@ -1,16 +1,19 @@
 import { App } from './App.js';
-import { NavBar } from './NavBar.js';
 import { Server } from './Server.js';
 
-// Mount the application to the root element.
-const server = new Server();
+window.addEventListener('load', async(event) => {
 
-const app = new App(server);
-await app.render('root');
+    const server = new Server();
+    await server.restore();
 
-const navbar = new NavBar(server);
-await navbar.renderPreLogin();
+    const app = new App(server);
+    await app.render('root');
 
-
-window.appInstance = app;
-window.navbarInstance = navbar;
+    const destroyButton = document.getElementById('destroy');
+    document.body.appendChild(destroyButton);
+    destroyButton.addEventListener('click', async() => {
+        server.destroy();
+        window.location.reload();
+    });
+    
+});

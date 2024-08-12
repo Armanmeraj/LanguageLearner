@@ -1,5 +1,6 @@
-import  mysql from 'mysql2'
-import dotenv from 'dotenv'
+import  mysql from 'mysql2';
+import dotenv from 'dotenv';
+import express from 'express';
 dotenv.config()
 
 const pool = mysql.createPool({
@@ -9,7 +10,7 @@ const pool = mysql.createPool({
     database: process.env.MYSQL_DATABASE
 }).promise()
 
-async function _create(firstname, lastname, username, password) {
+export async function _create(firstname, lastname, username, password) {
     try {
         const sql = `INSERT INTO accounts (first_name, last_name, username, pass_word, contents) VALUES (?, ?, ?, ?, ?)`;
         const [result] = await pool.query(sql, [firstname, lastname, username, password, 'default']);
@@ -20,7 +21,7 @@ async function _create(firstname, lastname, username, password) {
     }
 }
 
-async function _read(username) {
+export async function _read(username) {
     try {
         const sql = `SELECT * FROM accounts WHERE username = ?`;
         const [rows] = await pool.query(sql, [username]);
@@ -31,7 +32,7 @@ async function _read(username) {
     }
 }
 
-async function _update(firstname, lastname, username, password) {
+export async function _update(firstname, lastname, username, password) {
     try {
         const sql = `UPDATE accounts SET first_name = ?, last_name = ?, pass_word = ? WHERE username = ?`;
         const [result] = await pool.query(sql, [firstname, lastname, password, username]);
@@ -42,7 +43,7 @@ async function _update(firstname, lastname, username, password) {
     }
 }
 
-async function _delete(username) {
+export async function _delete(username) {
     try {
         const sql = `DELETE FROM accounts WHERE username = ?`;
         const [result] = await pool.query(sql, [username]);
@@ -53,8 +54,31 @@ async function _delete(username) {
     }
 }
 
-console.log(await _read('zainbeast'))
+const app = express();
 
-await _create('Arman', 'Meraj', 'arman0615', 'dog');
+app.use(express.json());
 
-console.log(await _read('arman0615'))
+app.get("/accounts", async (req, res) => {
+    const accounts = await _read('zainbeast');
+    res.send(accounts);
+});
+
+app.post("/accounts", async (req, res) => {
+    const { first_name, last_name, username, pass_word } = req.body;   
+    const result = await _create(first_name, last_name, username, pass_word, 'default');
+    res.status(201).send(result);
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
+// console.log(await _read('zainbeast'))
+
+// await _create('Arman', 'Meraj', 'arman0615', 'dog');
+
+// console.log(await _read('arman0615'))
