@@ -19,6 +19,26 @@ export class WelcomePage {
         this.#welcomeBackground = document.createElement('div');
         this.#welcomeBackground.id = 'welcomeBackground';
 
+        // const imageLinks = [
+        //     'https://www.pexels.com/photo/people-walking-on-the-street-2506923/',
+        //     'https://example.com/image2.jpg',
+        //     'https://example.com/image3.jpg',
+        //     // Add more image URLs as needed
+        // ];
+
+        // let currentIndex = 0;
+
+        // function changeBackground() {
+        //     const welcomeBackground = document.getElementById('welcomeBackground');
+        //     welcomeBackground.style.backgroundImage = `url(${imageLinks[currentIndex]})`;
+        //     currentIndex = (currentIndex + 1) % imageLinks.length;
+        // }
+
+        // setInterval(changeBackground, 7000);
+
+        // // Initialize the first background
+        // changeBackground();
+
         this.#welcomeContent = document.createElement('div')
         this.#welcomeContent.id = 'welcomeContent'
 
@@ -121,7 +141,7 @@ export class WelcomePage {
                 createPasswordInput.value,
                 language
             );
-
+            await this.#server.createAccount(newAccount);
             await this.#server.saveAccount(newAccount);
             await this.#server.confirmLogin('true');
             await this.#app.navigateTo('home'); 
@@ -169,17 +189,21 @@ export class WelcomePage {
             const username = usernameInputView.value;
             const password = passwordInputView.value;
 
-            const account = await this.#server.findAccount(); // Will do with MySQL later
-
-            if (account && account.username === username && account.password === password) {
-                // Navigate to Main Page
-
-                await this.#server.saveAccount(account);
-                await this.#server.confirmLogin('true');
-                await this.#app.navigateTo('home');
-                
-            } else {
-                alert('Invalid username or password');
+            try {
+                const account = await this.#server.readAccount(username);
+                console.log(account);
+        
+                if (account && account.username === username && account.password === password) {
+                    // Navigate to Main Page
+                    await this.#server.saveAccount(account);
+                    await this.#server.confirmLogin('true');
+                    await this.#app.navigateTo('home');
+                } else {
+                    alert('Invalid username or password');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Could not connect to server');
             }
         });
 

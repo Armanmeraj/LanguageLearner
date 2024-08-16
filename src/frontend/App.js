@@ -1,6 +1,7 @@
 import { WelcomePage } from './Welcome.js';
 import { Server } from './Server.js';
 import { Home } from './Home.js';
+import { Converse } from './Converse.js';
 
 export class App {
 
@@ -62,6 +63,13 @@ export class App {
             await this.#server.updateView(view);
             await this.adjustNavBar();
         }
+        else if (view === 'converse') {
+            const converseView = new Converse(this.#server);
+            this.#bodyElm.appendChild(await converseView.render());
+            window.location.hash = view;
+            await this.#server.updateView(view);
+            await this.adjustNavBar();
+        }
     }
     async renderPreLoginNavBar() { // Fix CSS
 
@@ -111,6 +119,10 @@ export class App {
         const rightPostLoginStyle = document.createElement('div');
         rightPostLoginStyle.id = 'rightPostLoginStyle'
 
+        const homeView = document.createElement('button');
+        homeView.innerHTML = "Home";
+        homeView.className = 'navbarButton2';
+
         const converseView = document.createElement('button');
         converseView.innerHTML = "Converse";
         converseView.className = 'navbarButton2';
@@ -139,6 +151,7 @@ export class App {
         name.innerHTML = `<p>${account.firstName} ${account.lastName}</p>`;
         name.id = 'navbarName';
 
+        leftPostLoginStyle.appendChild(homeView);
         leftPostLoginStyle.appendChild(converseView);
         leftPostLoginStyle.appendChild(reviseView);
         leftPostLoginStyle.appendChild(memorizeView);
@@ -152,6 +165,12 @@ export class App {
 
         postLoginStyle.appendChild(name);
 
+        homeView.addEventListener('click', () => {
+            this.navigateTo('home');
+        })
+        converseView.addEventListener('click', () => {
+            this.navigateTo('converse');
+        })
         aboutView.addEventListener('click', () => {
             this.navigateTo('about');
         })

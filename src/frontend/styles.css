@@ -113,7 +113,7 @@ body, html {
     border: none;
 
 }
-.navbarName:hover {
+#navbarName:hover {
     background-color: grey;
     color: white;
 }
@@ -178,6 +178,7 @@ body, html {
     align-items: center;
     padding: 20px;
     border-radius: 0px;
+    transition: background-image 1s ease-in-out;
 }
 
 #welcomeContent {

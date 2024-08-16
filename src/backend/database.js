@@ -1,6 +1,8 @@
 import  mysql from 'mysql2';
 import dotenv from 'dotenv';
 import express from 'express';
+import cors from 'cors';
+
 dotenv.config()
 
 const pool = mysql.createPool({
@@ -10,10 +12,10 @@ const pool = mysql.createPool({
     database: process.env.MYSQL_DATABASE
 }).promise()
 
-export async function _create(firstname, lastname, username, password) {
+export async function _createAccount(firstname, lastname, user, pass, lang) {
     try {
-        const sql = `INSERT INTO accounts (first_name, last_name, username, pass_word, contents) VALUES (?, ?, ?, ?, ?)`;
-        const [result] = await pool.query(sql, [firstname, lastname, username, password, 'default']);
+        const sql = `INSERT INTO accounts (firstname, lastname, user, pass, lang) VALUES (?, ?, ?, ?, ?)`;
+        const [result] = await pool.query(sql, [firstname, lastname, user, pass, lang]);
         return { message: 'Account created', id: result.insertId };
     } catch (error) {
         console.error(error);
@@ -21,9 +23,9 @@ export async function _create(firstname, lastname, username, password) {
     }
 }
 
-export async function _read(username) {
+export async function _readAccount(username) {
     try {
-        const sql = `SELECT * FROM accounts WHERE username = ?`;
+        const sql = `SELECT * FROM accounts WHERE user = ?`;
         const [rows] = await pool.query(sql, [username]);
         return rows[0];
     } catch (error) {
@@ -32,7 +34,7 @@ export async function _read(username) {
     }
 }
 
-export async function _update(firstname, lastname, username, password) {
+export async function _updateAccount(firstname, lastname, username, password) {
     try {
         const sql = `UPDATE accounts SET first_name = ?, last_name = ?, pass_word = ? WHERE username = ?`;
         const [result] = await pool.query(sql, [firstname, lastname, password, username]);
@@ -43,7 +45,7 @@ export async function _update(firstname, lastname, username, password) {
     }
 }
 
-export async function _delete(username) {
+export async function _deleteAccount(username) {
     try {
         const sql = `DELETE FROM accounts WHERE username = ?`;
         const [result] = await pool.query(sql, [username]);
@@ -57,15 +59,32 @@ export async function _delete(username) {
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.get("/accounts", async (req, res) => {
-    const accounts = await _read('zainbeast');
-    res.send(accounts);
+    // const username = req.query.user; // Read username from query parameters
+    // const accounts = await _readAccount(username);
+    // res.send(accounts);
+
+    const username = req.query.user; // Read username from query parameters
+    if (!username) {
+        return res.status(400).send({ error: 'Username is required' });
+    }
+    try {
+        const account = await _readAccount(username);
+        if (!account) {
+            return res.status(404).send({ error: 'Account not found' });
+        }
+        res.send(account);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
 });
 
 app.post("/accounts", async (req, res) => {
-    const { first_name, last_name, username, pass_word } = req.body;   
-    const result = await _create(first_name, last_name, username, pass_word, 'default');
+    const { firstname, lastname, user, pass, lang } = req.body;   
+    const result = await _createAccount(firstname, lastname, user, pass, lang);
     res.status(201).send(result);
 });
 
@@ -74,9 +93,12 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 
-app.listen(3000, () => {
+const port = 3000;
+app.listen(port, () => {
     console.log('Server is running on port 3000');
 });
+
+
 // console.log(await _read('zainbeast'))
 
 // await _create('Arman', 'Meraj', 'arman0615', 'dog');

@@ -2,11 +2,27 @@ CREATE DATABASE language_learner;
 USE language_learner;
 
 CREATE TABLE accounts (
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    username VARCHAR(255) NOT NULL,
-    pass_word VARCHAR(255) NOT NULL,
-    contents TEXT NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL,
+    user VARCHAR(255) NOT NULL,
+    pass VARCHAR(255) NOT NULL,
+    lang VARCHAR(255) NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE wordBank (
+    id INT PRIMARY KEY,
+    knownWords JSON,
+    unknownWords JSON,
+    created TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE decks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    deckName VARCHAR(255) NOT NULL,
+    deckContents JSON,
+    report TEXT,
     created TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
