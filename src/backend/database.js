@@ -2,6 +2,9 @@ import  mysql from 'mysql2';
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
+import OpenAI from 'openai';
+
+// MySQL /accounts API
 
 dotenv.config()
 
@@ -27,6 +30,17 @@ export async function _readAccount(username) {
     try {
         const sql = `SELECT * FROM accounts WHERE user = ?`;
         const [rows] = await pool.query(sql, [username]);
+        return rows[0];
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function _readWordBank(id) {
+    try {
+        const sql = `SELECT * FROM wordBank WHERE id = ?`;
+        const [rows] = await pool.query(sql, [id]);
         return rows[0];
     } catch (error) {
         console.error(error);
@@ -62,9 +76,6 @@ app.use(express.json());
 app.use(cors());
 
 app.get("/accounts", async (req, res) => {
-    // const username = req.query.user; // Read username from query parameters
-    // const accounts = await _readAccount(username);
-    // res.send(accounts);
 
     const username = req.query.user; // Read username from query parameters
     if (!username) {
@@ -93,14 +104,108 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 
+
+app.get("/wordBank", async (req, res) => {
+    const id = req.query.id;
+    if (!id) {
+        return res.status(400).send({ error: 'ID is required' });
+    }
+    try {
+        const wordBank = await _readWordBank(id);
+        if (!wordBank) {
+            return res.status(404).send({ error: 'Word bank not found' });
+        }
+        res.send(wordBank);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
+});
+
+
+
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  
+  // Route to start a conversation
+  app.post('/start-conversation', async (req, res) => {
+    const { language, knownWords } = req.body;
+  
+    try {
+      const response = await openai.chat.completions.create({
+        messages: [
+          {
+            role: 'system',
+            // content: `You are a language teacher. Have a conversation in ${language} using the following words the user is familiar with: ${knownWords.join(', ')}.`,
+            content: `You are a language teacher. Have a conversation in ${language} .`,
+          },
+          {
+            role: 'user',
+            content: `Start a conversation with me.`,
+          },
+        ],
+        model: 'gpt-3.5-turbo',
+      });
+  
+      res.json({
+        message: response.choices[0].message.content,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to generate a conversation.' });
+    }
+  });
+  
+  // Route to continue the conversation
+  app.post('/continue-conversation', async (req, res) => {
+    const { language, knownWords, userMessage } = req.body;
+  
+    try {
+      const response = await openai.chat.completions.create({
+        messages: [
+          {
+            role: 'system',
+            // content: `You are a language teacher. Continue the conversation in ${language} using the following words the user is familiar with: ${knownWords.join(', ')}.`,
+            content: `You are a language teacher. Continue the conversation in ${language}.`,
+        },
+          {
+            role: 'user',
+            content: userMessage,
+          },
+        ],
+        model: 'gpt-3.5-turbo',
+      });
+  
+      res.json({
+        reply: response.choices[0].message.content,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to continue the conversation.' });
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const port = 3000;
 app.listen(port, () => {
     console.log('Server is running on port 3000');
 });
-
-
-// console.log(await _read('zainbeast'))
-
-// await _create('Arman', 'Meraj', 'arman0615', 'dog');
-
-// console.log(await _read('arman0615'))

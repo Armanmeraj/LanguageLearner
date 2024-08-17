@@ -30,3 +30,12 @@ INSERT INTO accounts (first_name, last_name, username, pass_word, contents)
 VALUES
 ('Sharyar', 'Ali', 'sherryzain', 'rishith', 'Sherry loves Rishith'),
 ('Zain', 'Chaudhry', 'zainbeast', 'eesa', 'Zain Eesa forever');
+
+
+INSERT INTO wordBank (id, knownWords, unknownWords, created)
+VALUES (
+    1,
+    JSON_ARRAY('hola', 'adiós', 'gracias', 'por favor', 'sí', 'no', 'buenos días', 'buenas noches', 'perdón', 'disculpe', 'salud', 'bien', 'mal', 'amigo', 'amiga', 'familia', 'comida', 'agua', 'casa', 'escuela'),
+    JSON_ARRAY('trabajo', 'dinero', 'tiempo', 'amor', 'felicidad', 'tristeza', 'miedo', 'esperanza', 'paz', 'guerra'),
+    NOW()
+);

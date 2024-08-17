@@ -130,25 +130,37 @@ export class WelcomePage {
 
         submitButton.addEventListener('click', async () => {
             
-            // Validate account credentials
-            // Save account to database and server
-            // Traverse to main page
+            try {
+                // Validate account credentials
+                // Save account to database and server
+                // Traverse to main page
 
-            const newAccount = new Account(
-                firstNameInput.value,
-                lastNameInput.value,
-                createUsernameInput.value,
-                createPasswordInput.value,
-                language
-            );
-            await this.#server.createAccount(newAccount);
-            await this.#server.saveAccount(newAccount);
-            await this.#server.confirmLogin('true');
-            await this.#app.navigateTo('home'); 
+                // Create Account and save to MySQL server
+                const newAccount = new Account(
+                    null,
+                    firstNameInput.value,
+                    lastNameInput.value,
+                    createUsernameInput.value,
+                    createPasswordInput.value,
+                    language
+                );
+                console.log("About to upload: " + JSON.stringify(newAccount));
+                await this.#server.createAccount(newAccount);
 
-            // Figure out how to get to main page
+                // Get account back from MySQL server
+                const account = await this.#server.readAccount(newAccount.username);
+                console.log("Successfully uploaded: " + JSON.stringify(account));
+                // Save account to instance
+                await this.#server.saveAccount(account);
+                await this.#server.confirmLogin('true');
+                await this.#app.navigateTo('home'); 
+
+                // Figure out how to get to main page
+            } catch (error) {
+                console.error(error);
+            }
             
-        })
+        });
 
         accountSetupView.appendChild(firstNameInput);
         accountSetupView.appendChild(lastNameInput);

@@ -13,6 +13,7 @@ window.addEventListener('load', async(event) => {
     document.body.appendChild(destroyButton);
     destroyButton.addEventListener('click', async() => {
         server.destroy();
+
         window.location.reload();
     });
     

@@ -1,5 +1,6 @@
 export class Account {
-    constructor(firstName, lastName, username, password, languagePreference) {
+    constructor(id, firstName, lastName, username, password, languagePreference) {
+      this.id = id;
       this.firstName = firstName;
       this.lastName = lastName;
       this.username = username;

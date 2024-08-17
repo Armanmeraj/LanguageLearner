@@ -171,13 +171,6 @@ export class Server {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                // body: JSON.stringify({
-                //     firstname: firstname,
-                //     lastname: lastname,
-                //     user: username,
-                //     pass: password,
-                //     lang: language
-                // })
                 body: JSON.stringify({
                     firstname: account.firstName,
                     lastname: account.lastName,
@@ -204,7 +197,25 @@ export class Server {
                 throw new Error(`HTTP error (readAccount)! status: ${response.status}`);
             }
             const foundAccount = await response.json();
-            return new Account(foundAccount.firstname, foundAccount.lastname, foundAccount.user, foundAccount.pass, foundAccount.lang);
+            return new Account(foundAccount.id, foundAccount.firstname, foundAccount.lastname, foundAccount.user, foundAccount.pass, foundAccount.lang);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async readWordBank(id) {
+        try {
+            const response = await fetch(`http://127.0.0.1:3000/wordBank?id=${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error (readWordBank)! status: ${response.status}`);
+            }
+            const wordBank = await response.json();
+            return { id: wordBank.id, knownWords: wordBank.knownWords, unknownWords: wordBank.unknownWords };
         } catch (error) {
             console.log(error);
         }
